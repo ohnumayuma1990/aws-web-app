@@ -206,11 +206,13 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 const connections = usersResponse.Items || [];
                 for (const conn of connections) {
                     const otherConnectionId = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, otherConnectionId, {
-                        action: "messageReceived",
-                        from: connectionId,
-                        message: message
-                    });
+                    if (otherConnectionId !== connectionId) {
+                        await sendMessageToClient(domainName, stage, otherConnectionId, {
+                            action: "messageReceived",
+                            from: connectionId,
+                            message: message
+                        });
+                    }
                 }
             } else {
                 return { statusCode: 400, body: "Unknown action" };
