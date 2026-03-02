@@ -31,10 +31,10 @@ const App: React.FC = () => {
         if (data.users) setUsers(data.users);
       } else if (data.action === "userJoined") {
         setUsers(prev => [...prev, data.connectionId]);
-        setMessages(prev => [...prev, `User joined: ${data.connectionId}`]);
+        setMessages(prev => [...prev, `${data.connectionId} が入室しました`]);
       } else if (data.action === "userLeft") {
         setUsers(prev => prev.filter(u => u !== data.connectionId));
-        setMessages(prev => [...prev, `User left: ${data.connectionId}`]);
+        setMessages(prev => [...prev, `${data.connectionId} が退室しました`]);
       } else if (data.action === "messageReceived") {
         setMessages(prev => [...prev, `${data.from}: ${data.message}`]);
       }
@@ -65,7 +65,7 @@ const App: React.FC = () => {
   const sendMessage = () => {
     if (ws.current?.readyState === WebSocket.OPEN && inputMessage && roomId) {
       ws.current.send(JSON.stringify({ action: "sendMessage", roomId, message: inputMessage }));
-      setMessages(prev => [...prev, `Me: ${inputMessage}`]);
+      setMessages(prev => [...prev, `自分: ${inputMessage}`]);
       setInputMessage('');
     }
   };
@@ -73,27 +73,27 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Serverless Game</h1>
-        <p>Status: {connected ? 'Connected' : 'Disconnected'}</p>
+        <h1>サーバーレス対戦ゲーム</h1>
+        <p>ステータス: {connected ? '接続済み' : '切断'}</p>
 
         {!roomId ? (
           <div>
-            <button onClick={createRoom}>Create Room</button>
+            <button onClick={createRoom}>ルームを作成</button>
             <div style={{ marginTop: '20px' }}>
               <input
                 type="text"
-                placeholder="Room ID"
+                placeholder="ルームIDを入力"
                 value={inputRoomId}
                 onChange={e => setInputRoomId(e.target.value)}
               />
-              <button onClick={joinRoom}>Join Room</button>
+              <button onClick={joinRoom}>ルームに参加</button>
             </div>
           </div>
         ) : (
           <div>
-            <h3>Room: {roomId}</h3>
+            <h3>ルームID: {roomId}</h3>
             <div>
-              <h4>Users in room:</h4>
+              <h4>参加中のユーザー:</h4>
               <ul>
                 {users.map((u, i) => <li key={i}>{u}</li>)}
               </ul>
@@ -104,12 +104,12 @@ const App: React.FC = () => {
             <div>
               <input
                 type="text"
-                placeholder="Type a message..."
+                placeholder="メッセージを入力..."
                 value={inputMessage}
                 onChange={e => setInputMessage(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && sendMessage()}
               />
-              <button onClick={sendMessage}>Send</button>
+              <button onClick={sendMessage}>送信</button>
             </div>
           </div>
         )}
