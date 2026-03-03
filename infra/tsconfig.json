@@ -19,6 +19,7 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
+    "types": ["jest", "node"],
     "typeRoots": [
       "./node_modules/@types"
     ]
