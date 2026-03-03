@@ -17,7 +17,7 @@ function createDeck() {
         }
     }
     for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = crypto.randomInt(i + 1);
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
     return deck;
@@ -48,7 +48,7 @@ wss.on('connection', (ws) => {
         const clientState = connections.get(connectionId);
 
         if (action === 'createRoom') {
-            const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const roomId = crypto.randomInt(2176782336).toString(36).padStart(6, '0').toUpperCase();
             clientState.roomId = roomId;
             rooms.set(roomId, {
                 users: new Set([connectionId]),

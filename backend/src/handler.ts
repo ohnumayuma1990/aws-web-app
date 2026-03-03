@@ -1,4 +1,5 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
+import { randomInt } from "crypto";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, DeleteCommand, GetCommand, UpdateCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
@@ -39,7 +40,7 @@ const createDeck = (): Card[] => {
     }
     // Shuffle
     for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = randomInt(i + 1);
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
     return deck;
@@ -141,7 +142,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
             const action = payload.action;
 
             if (action === "createRoom") {
-                const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const roomId = randomInt(2176782336).toString(36).padStart(6, '0').toUpperCase();
                 const isPrivate = payload.isPrivate || false;
 
                 // Add room
