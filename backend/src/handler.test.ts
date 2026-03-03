@@ -1,0 +1,78 @@
+import { handler } from "./handler";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, DeleteCommand, UpdateCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
+import { mockClient } from "aws-sdk-client-mock";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+
+const ddbMock = mockClient(DynamoDBDocumentClient);
+const apiGwMock = mockClient(ApiGatewayManagementApiClient);
+
+describe("handler", () => {
+    beforeEach(() => {
+        ddbMock.reset();
+        apiGwMock.reset();
+        process.env.TABLE_NAME = "TestTable";
+        process.env.AWS_REGION = "us-east-1";
+    });
+
+    it("should handle $connect correctly", async () => {
+        ddbMock.on(PutCommand).resolves({});
+
+        const event = {
+            requestContext: {
+                routeKey: "$connect",
+                connectionId: "test-conn-id",
+                domainName: "test.com",
+                stage: "prod"
+            }
+        } as unknown as APIGatewayProxyEvent;
+
+        const result = await handler(event, {} as any, () => {}) as APIGatewayProxyResult;
+
+        expect(result.statusCode).toBe(200);
+        expect(result.body).toBe("Connected.");
+        expect(ddbMock.commandCalls(PutCommand).length).toBe(1);
+    });
+
+    it("should handle $disconnect correctly", async () => {
+        ddbMock.on(GetCommand).resolves({ Item: { roomId: "ROOM1" } });
+        ddbMock.on(DeleteCommand).resolves({});
+        ddbMock.on(QueryCommand).resolves({ Items: [] }); // No other users in room
+
+        const event = {
+            requestContext: {
+                routeKey: "$disconnect",
+                connectionId: "test-conn-id",
+                domainName: "test.com",
+                stage: "prod"
+            }
+        } as unknown as APIGatewayProxyEvent;
+
+        const result = await handler(event, {} as any, () => {}) as APIGatewayProxyResult;
+
+        expect(result.statusCode).toBe(200);
+        expect(ddbMock.commandCalls(DeleteCommand).length).toBe(2); // One for connection, one for room connection
+    });
+
+    it("should handle createRoom action correctly", async () => {
+        ddbMock.on(PutCommand).resolves({});
+        ddbMock.on(UpdateCommand).resolves({});
+        apiGwMock.on(PostToConnectionCommand).resolves({});
+
+        const event = {
+            requestContext: {
+                routeKey: "$default",
+                connectionId: "test-conn-id",
+                domainName: "test.com",
+                stage: "prod"
+            },
+            body: JSON.stringify({ action: "createRoom" })
+        } as unknown as APIGatewayProxyEvent;
+
+        const result = await handler(event, {} as any, () => {}) as APIGatewayProxyResult;
+
+        expect(result.statusCode).toBe(200);
+        expect(ddbMock.commandCalls(PutCommand).length).toBe(2); // Room and RoomConnection
+        expect(apiGwMock.commandCalls(PostToConnectionCommand).length).toBe(1);
+    });
+});
