@@ -124,14 +124,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 }));
 
                 const connections = usersResponse.Items || [];
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const otherConnectionId = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, otherConnectionId, {
+                    return sendMessageToClient(domainName, stage, otherConnectionId, {
                         action: "userLeft",
                         connectionId: connectionId,
                         roomId: roomId
                     });
-                }
+                }));
             }
             return { statusCode: 200, body: "Disconnected." };
         } else {
@@ -225,16 +225,17 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 const connections = usersResponse.Items || [];
                 const roomConnections = connections.map(c => c.SK.replace('CONN#', ''));
 
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const otherConnectionId = conn.SK.replace('CONN#', '');
                     if (otherConnectionId !== connectionId) {
-                         await sendMessageToClient(domainName, stage, otherConnectionId, {
+                        return sendMessageToClient(domainName, stage, otherConnectionId, {
                             action: "userJoined",
                             connectionId: connectionId,
                             roomId: roomId
                         });
                     }
-                }
+                    return Promise.resolve();
+                }));
 
                 await sendMessageToClient(domainName, stage, connectionId, {
                     action: "roomJoined",
@@ -288,14 +289,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 }));
 
                 const connections = usersResponse.Items || [];
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const otherConnectionId = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, otherConnectionId, {
+                    return sendMessageToClient(domainName, stage, otherConnectionId, {
                         action: "userLeft",
                         connectionId: connectionId,
                         roomId: roomId
                     });
-                }
+                }));
 
                 await sendMessageToClient(domainName, stage, connectionId, {
                     action: "leftRoom",
@@ -331,9 +332,9 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 }));
                 const connections = usersResponse.Items || [];
 
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const cid = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, cid, {
+                    return sendMessageToClient(domainName, stage, cid, {
                         action: "gameStarted",
                         gameState: {
                             field: [],
@@ -344,7 +345,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                         },
                         players: connections.map(c => c.SK.replace('CONN#', ''))
                     });
-                }
+                }));
 
             } else if (action === "drawCard") {
                 const roomId = payload.roomId;
@@ -391,15 +392,15 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 }));
 
                 // Notify all
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const cid = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, cid, {
+                    return sendMessageToClient(domainName, stage, cid, {
                         action: "cardDrawn",
                         connectionId: connectionId,
                         deckCount: deck.length,
                         card: cid === connectionId ? card : null // Only show card to drawer
                     });
-                }
+                }));
 
             } else if (action === "playCard") {
                 const { roomId, cardIndex } = payload;
@@ -456,16 +457,16 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 }));
 
                 // Notify all
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const cid = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, cid, {
+                    return sendMessageToClient(domainName, stage, cid, {
                         action: "cardPlayed",
                         connectionId: connectionId,
                         card: card,
                         nextTurnIndex: nextTurnIndex,
                         turnStartTime: Date.now()
                     });
-                }
+                }));
 
             } else if (action === "selectCard") {
                 const { roomId, cardIndex } = payload;
@@ -479,14 +480,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                     }
                 }));
                 const connections = usersResponse.Items || [];
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const cid = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, cid, {
+                    return sendMessageToClient(domainName, stage, cid, {
                         action: "cardSelected",
                         connectionId: connectionId,
                         cardIndex: cardIndex
                     });
-                }
+                }));
 
             } else if (action === "actOnCard") {
                 const { roomId, cardIndex } = payload;
@@ -525,15 +526,15 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                     }));
                 }
 
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const cid = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, cid, {
+                    return sendMessageToClient(domainName, stage, cid, {
                         action: "scoreUpdated",
                         connectionId: connectionId,
                         score: score,
                         winnerId: winnerId
                     });
-                }
+                }));
 
             } else if (action === "resetGame") {
                 const roomId = payload.roomId;
@@ -547,14 +548,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                     }
                 }));
                 const connections = usersResponse.Items || [];
-                for (const conn of connections) {
-                    await docClient.send(new UpdateCommand({
+                await Promise.all(connections.map(conn => {
+                    return docClient.send(new UpdateCommand({
                         TableName: TABLE_NAME,
                         Key: { PK: `ROOM#${roomId}`, SK: conn.SK },
                         UpdateExpression: "SET score = :zero, hand = :empty",
                         ExpressionAttributeValues: { ":zero": 0, ":empty": [] }
                     }));
-                }
+                }));
 
                 await docClient.send(new UpdateCommand({
                     TableName: TABLE_NAME,
@@ -571,12 +572,12 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                     }
                 }));
 
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const cid = conn.SK.replace('CONN#', '');
-                    await sendMessageToClient(domainName, stage, cid, {
+                    return sendMessageToClient(domainName, stage, cid, {
                         action: "gameReset"
                     });
-                }
+                }));
 
             } else if (action === "sendMessage") {
                 const message = payload.message;
@@ -592,16 +593,17 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 }));
 
                 const connections = usersResponse.Items || [];
-                for (const conn of connections) {
+                await Promise.all(connections.map(conn => {
                     const otherConnectionId = conn.SK.replace('CONN#', '');
                     if (otherConnectionId !== connectionId) {
-                        await sendMessageToClient(domainName, stage, otherConnectionId, {
+                        return sendMessageToClient(domainName, stage, otherConnectionId, {
                             action: "messageReceived",
                             from: connectionId,
                             message: message
                         });
                     }
-                }
+                    return Promise.resolve();
+                }));
             } else {
                 return { statusCode: 400, body: "Unknown action" };
             }
