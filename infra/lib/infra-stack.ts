@@ -19,6 +19,14 @@ export class InfraStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // For dev purposes
     });
 
+    // Add GSI for searching public rooms
+    gameTable.addGlobalSecondaryIndex({
+      indexName: 'TypeIndex',
+      partitionKey: { name: 'type', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'createdAt', type: dynamodb.AttributeType.NUMBER },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
     // Lambda Function
     const backendLambda = new nodejs.NodejsFunction(this, 'GameBackendFunction', {
       entry: path.join(__dirname, '../../backend/src/handler.ts'),
@@ -57,6 +65,30 @@ export class InfraStack extends cdk.Stack {
       integration: integration,
     });
     webSocketApi.addRoute('sendMessage', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('searchRooms', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('leaveRoom', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('startGame', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('drawCard', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('playCard', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('selectCard', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('actOnCard', {
+      integration: integration,
+    });
+    webSocketApi.addRoute('resetGame', {
       integration: integration,
     });
     webSocketApi.addRoute('$default', {

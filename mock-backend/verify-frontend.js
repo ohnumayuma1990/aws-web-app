@@ -65,15 +65,9 @@ const puppeteer = require('puppeteer');
         console.log(`Page 2 joined room ${roomId}`);
 
         // Send message from page 2
-        const msgInput = await page2.$('input[placeholder="メッセージを入力..."]');
+        const msgInput = await page2.$('input[placeholder="チャット..."]');
         await msgInput.type('Hello from page 2!');
-        const sendBtn = await page2.evaluateHandle(() => {
-            const buttons = Array.from(document.querySelectorAll('button'));
-            return buttons.find(b => b.textContent.includes('送信'));
-        });
-        if (sendBtn) {
-            await sendBtn.click();
-        }
+        await page2.keyboard.press('Enter');
 
         // Verify message received on page 1
         console.log('Waiting for message on page 1...');
