@@ -83,7 +83,8 @@ wss.on('connection', (ws) => {
                         sendMessageToClient(otherConnectionId, {
                             action: "messageReceived",
                             from: connectionId,
-                            message: msg
+                            message: msg,
+                            timestamp: payload.timestamp // Pass through timestamp for latency measurement
                         });
                     }
                 }
