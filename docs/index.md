@@ -2,15 +2,16 @@
 
 このドキュメントは、AWSサーバーレス構成によるオンライン対戦ゲームプロジェクトの構成とコードについて解説するものです。
 
-## 構成
+## 目次
 
-ドキュメントは以下のセクションに分かれています。
-
-- [アーキテクチャ](architecture.md): システム全体の設計と技術スタック。
-- [バックエンド](backend/overview.md): AWS Lambdaを使用したビジネスロジック。
-- [フロントエンド](frontend/overview.md): Reactを使用したユーザーインターフェース。
-- [インフラ](infra/overview.md): AWS CDKを使用したInfrastructure as Code。
-- [モックバックエンド](mock-backend/overview.md): ローカル開発用のモックサーバー。
+- **[システム仕様](specifications/functional.md)**: ゲームの機能とルール、および [WebSocket API 仕様](specifications/api.md)。
+- **[システム設計](architecture.md)**: 全体アーキテクチャ。
+  - **[データベース設計](design/database.md)**: DynamoDBのデータモデルとアクセスパターン。
+  - **[バックエンド設計](design/backend.md)**: AWS Lambdaのロジックとハンドラー。
+  - **[フロントエンド設計](design/frontend.md)**: Reactコンポーネントと状態管理。
+- **[インフラ構成](infra/overview.md)**: AWS CDKを使用したInfrastructure as Code。
+- **[モックバックエンド](mock-backend/overview.md)**: ローカル開発用のモックサーバー。
+- **[テスト計画](TEST_PLAN.md)**: 品質保証のためのテスト戦略。
 
 ## ディレクトリ構造
 

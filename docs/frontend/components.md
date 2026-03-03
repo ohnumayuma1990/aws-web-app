@@ -8,19 +8,12 @@
 
 ### ステート管理
 - `roomId`: 現在参加しているルームのID。
-- `messages`: 受信したメッセージのリスト。
-- `connected`: WebSocketの接続状態。
-- `users`: 現在のルームに参加しているユーザーの接続IDリスト。
-
-### WebSocket 接続 (useEffect)
-コンポーネントのマウント時にWebSocket接続を確立し、各種イベントハンドラーを設定します。
-- `onmessage`: 受信したデータのアクション（`roomCreated`, `roomJoined`, `userJoined`, `userLeft`, `messageReceived`）に応じてステートを更新します。
+- `gameState`: 山札、場、手札、ターン、ゲーム状態を管理。
+- `scores`: プレイヤースコア。
 
 ### 主要機能
-- **ルーム作成 (`createRoom`)**: `action: "createRoom"` を送信します。
-- **ルーム参加 (`joinRoom`)**: 指定したIDで `action: "joinRoom"` を送信します。
-- **メッセージ送信 (`sendMessage`)**: `action: "sendMessage"` と共に入力されたテキストを送信します。
+- **ルーム作成/参加**: APIを呼び出してルームを作成・参加。
+- **ゲームプレイ**: カードを引く、カードを出す、アクション。
+- **メッセージ送信**: チャットメッセージを送信。
 
-## UI構成
-- 接続前/ルーム未参加時: ルーム作成ボタンと参加フォームを表示。
-- ルーム参加中: ルームID、参加者リスト、チャット履歴、メッセージ入力欄を表示。
+UI構成やステートの詳細については **[フロントエンド設計](../design/frontend.md)** を参照してください。
