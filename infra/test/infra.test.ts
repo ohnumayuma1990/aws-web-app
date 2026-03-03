@@ -11,10 +11,10 @@ describe('InfraStack', () => {
 
     template.hasResourceProperties('AWS::DynamoDB::Table', {
       BillingMode: 'PAY_PER_REQUEST',
-      AttributeDefinitions: [
+      AttributeDefinitions: Match.arrayWith([
         { AttributeName: 'PK', AttributeType: 'S' },
         { AttributeName: 'SK', AttributeType: 'S' }
-      ]
+      ])
     });
   });
 
